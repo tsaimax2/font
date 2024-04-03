@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="church_devotion_form" name="Church Devotion">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+        <link rel="stylesheet" href="//jqueryui.com/resources/demos/style.css" />
+        <script src="https://code.jquery.com/jquery-1.12.4.js" />
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" />
+        <script>$( function() {$( "#date" ).datepicker();} );</script>
+        <script>$( function() {$( "#check_date" ).datepicker();} );</script>
+        <t t-call="website.layout">
+            <div class="container">
+
+                <div class="row s_nb_column_fixed">
+
+                    <div class="col-lg-12 s_title pt16 pb16">
+                        <h3>Devotion</h3>
+                        <form>
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    NAME *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <input type="text" id="name" placeholder="Enter your Name" />
+                                </div>
+                            </div>
+                            
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    PHONE *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <input type="text" id="phone" required="True"
+                                           placeholder="999**12345" />
+                                </div>
+                            </div>
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    E-MAIL *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <input type="email" id="email" required="True"
+                                           placeholder="example@gmail.com" />
+                                </div>
+                            </div>
+                            
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    AMOUNT *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <input type="text" id="devotion_amount" required="True"  placeholder="Enter your amount" />
+                                </div>
+                            </div>
+
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    TYPE *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <div class="selection_collection">
+                                        <div style="padding-left: 15px;padding-top: 15px;">
+                                            <t t-foreach="church_collections" t-as="collection">
+                                                <div>
+                                                    <input type="checkbox" t-att-collection-id="collection.id"
+                                                           class="check_box_devotion_type" />
+                                                    <label for="collection.id" t-esc="collection.name" />
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                           
+
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    PRAYER *
+                                </div>
+                                <div class="col-lg-9 s_title s_title pt16 pb16">
+                                    <textarea id="devotion_prayer" required="False" placeholder="Enter Prayer" style="height: 150px; font-size: 16px; padding: 10px; margin: 10px; border: 1px solid #ccc; border-radius: 5px;"></textarea>
+                                    <!-- <input type="text" id="devotion_prayer" required="False"  placeholder="Enter Prayer" style="height: 150px; font-size: 16px; display: flex; flex-direction: column; padding: 10px; margin: 10px; border: 1px solid #ccc; border-radius: 5px;"/> -->
+                                </div>
+                            </div>                  
+
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-12 s_title pt16 pb16">
+                                    <button type="button" id="submit_button"
+                                            class="btn btn-primary btn-md o_website_form_send">Send
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- <div>
+                    <t t-call="church_management.church_devotion_table_details" />
+                </div> -->
+            </div>
+        </t>
+    </template>
+
+    <template id="church_line_devotion_form" name="Line_Devotion">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+        <link rel="stylesheet" href="//jqueryui.com/resources/demos/style.css" />
+        <script src="https://code.jquery.com/jquery-1.12.4.js" />
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" />
+        <script>$( function() {$( "#date" ).datepicker();} );</script>
+        <script>$( function() {$( "#check_date" ).datepicker();} );</script>
+        <t t-call="website.layout">
+            <div class="container">
+
+                <div class="row s_nb_column_fixed">
+
+                    <div class="col-lg-12 s_title pt16 pb16">
+                        <h3>Devotion</h3>
+                        <form>
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    NAME *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <input type="text" id="name" placeholder="Enter your Name" />
+                                </div>
+                            </div>
+                            
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    PHONE *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <input type="text" id="phone" required="True"
+                                           placeholder="999**12345" />
+                                </div>
+                            </div>
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    E-MAIL *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <input type="email" id="email" required="True"
+                                           placeholder="example@gmail.com" />
+                                </div>
+                            </div>
+                            
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    AMOUNT *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <input type="text" id="devotion_amount" required="True"  placeholder="Enter your amount" />
+                                </div>
+                            </div>                            
+                            
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    TYPE *
+                                </div>
+                                <div class="col-lg-9 s_title pt16 pb16">
+                                    <div class="selection_collection">
+                                        <div style="padding-left: 15px;padding-top: 15px;">
+                                            <t t-foreach="church_collections" t-as="collection">
+                                                <div>
+                                                    <input type="checkbox" t-att-collection-id="collection.id"
+                                                           class="check_box_devotion_type" />
+                                                    <label for="collection.id" t-esc="collection.name" />
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-3 s_title pt16 pb16 field_booking_table">
+                                    PRAYER *
+                                </div>
+                                <div class="col-lg-9 s_title s_title pt16 pb16">
+                                    <textarea id="devotion_prayer" required="False" placeholder="Enter Prayer" style="height: 150px; font-size: 16px; padding: 10px; margin: 10px; border: 1px solid #ccc; border-radius: 5px;"></textarea>
+                                    <!-- <input type="text" id="devotion_prayer" required="False"  placeholder="Enter Prayer" style="height: 150px; font-size: 16px; display: flex; flex-direction: column; padding: 10px; margin: 10px; border: 1px solid #ccc; border-radius: 5px;"/> -->
+                                </div>
+                            </div>                  
+
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-12 s_title pt16 pb16">
+                                    <button type="button" id="submit_button_line"
+                                            class="btn btn-primary btn-md o_website_form_send">Send
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- <div>
+                    <t t-call="church_management.church_devotion_table_details" />
+                </div> -->
+            </div>
+        </t>
+    </template>
+    
+    <template id="panel_template_1" name="Panel Template 1">
+            <div class="panel">
+                <span class="left-text">捐款期限（年）</span>
+                <button class="button decrement-button_1" t-on-click="decrement">-</button>
+                <span class="value_1" t-esc="value_1"/>
+                <button class="button increment-button_1" t-on-click="increment">+</button>
+            </div>
+    </template>
+
+    <template id="panel_template_2" name="Panel Template 2">
+            <div class="panel">
+                <span class="left-text">捐款期限（年）</span>
+                <button class="button decrement-button_2" t-on-click="decrement">-</button>
+                <span class="value_2" t-esc="value_2"/>
+                <button class="button increment-button_2" t-on-click="increment">+</button>
+            </div>
+    </template>
+
+    <template id="church_period_devotion_form" name="Church Period Devotion">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+        <link rel="stylesheet" href="//jqueryui.com/resources/demos/style.css" />
+        <script src="https://code.jquery.com/jquery-1.12.4.js" />
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" />
+        <script>$( function() {$( "#date" ).datepicker();} );</script>
+        <script>$( function() {$( "#check_date" ).datepicker();} );</script>
+        <t t-call="website.layout">
+            <div class="container">
+                <div class="row s_nb_column_fixed">
+                    <div class="col-lg-12 s_title pt16 pb16">
+                        <h3>定期定額捐款</h3>
+                        <form id='form_1'>
+                             <t t-name="combined_template">
+                                <div t-attf-class="o_form_label pt-3 pb-3 text-xl">
+                                    愛心小天使(個人捐款):
+                                </div>
+                                <div t-attf-class="o_form_input">
+                                    <div class="row">
+                                        <t t-foreach="period_1_types.items()" t-as="period_1" t-index="index">
+                                            <div class="col-md-6">
+                                                <input type="checkbox" t-att-period_1-id="period_1[0]"
+                                                    class="check_box_devotion_type_1" id="period_1[index]"/>
+                                                <label for="period_1[index]" t-esc="period_1[1]" />
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <t t-call="ng_church.panel_template_1"/>
+                                </div>
+
+                                <div t-attf-class="o_form_label pt-3 pb-3 text-xl">
+                                    @系統每月自動捐款一次。
+                                </div>
+                            </t>
+                            
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-12 s_title pt16 pb16">
+                                    <button type="button" id="submit_period_button_1"
+                                            class="btn btn-primary btn-md o_website_form_send">Send
+                                    </button>
+                                </div>
+                            </div>                            
+                            
+                        </form>
+
+                        <form id='form_2'>
+                            <t t-name="combined_template">
+                                <div t-attf-class="o_form_label pt-3 pb-3 text-xl">
+                                    愛心大使(團體、企業捐款):
+                                </div>
+
+                                <div t-attf-class="o_form_input">
+                                    <div class="row">
+                                        <t t-foreach="period_2_types.items()" t-as="period_2" t-index="index">
+                                            <div class="col-md-6">
+                                                <input type="checkbox" t-att-period_2-id="period_2[0]"
+                                                    class="check_box_devotion_type_2" id="period_2[index]"/>
+                                                <label for="period_2[index]" t-esc="period_2[1]" />
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <t t-call="ng_church.panel_template_2"/>
+                                </div>
+
+                                <div t-attf-class="o_form_label pt-3 pb-3 text-xl">
+                                    @系統每月自動捐款一次。
+                                </div>
+                            </t>
+                            
+                            <div class="row s_nb_column_fixed">
+                                <div class="col-lg-12 s_title pt16 pb16">
+                                    <button type="button" id="submit_period_button_2"
+                                            class="btn btn-primary btn-md o_website_form_send">Send
+                                    </button>
+                                </div>
+                            </div>                                                   
+                        </form>
+                         
+                        <div t-attf-class="o_form_label pt-3 pb-3 text-xl">
+                            邀請您一起守護弱勢家庭及兒童，感謝您的支持！ 
+                        </div>                       
+                        
+                        <script type="text/javascript">
+                            $(document).ready(function() {
+                                var valueElement_1 = $('.value_1');
+                                var value_1 = parseInt(valueElement_1.text());
+
+                                // Event handling for the first form's decrement button
+                                $('.decrement-button_1').on('click', function() {
+                                    if (value_1 > 1) {
+                                        value_1--; // Decrement value
+                                        updateValueInUI(valueElement_1, value_1);
+                                    }
+                                    event.preventDefault(); 
+                                });
+
+                                // Event handling for the first form's increment button
+                                $('.increment-button_1').on('click', function() {
+                                    value_1++; // Increment value
+                                    updateValueInUI(valueElement_1, value_1);
+                                    event.preventDefault(); 
+                                });
+
+                                // Similar code for the second form (value_2, valueElement_2, etc.)
+                                var valueElement_2 = $('.value_2');
+                                var value_2 = parseInt(valueElement_2.text());
+
+                                // Event handling for the second form's decrement button
+                                $('.decrement-button_2').on('click', function() {
+                                    if (value_2 > 1) {
+                                        value_2--; // Decrement value
+                                        updateValueInUI(valueElement_2, value_2);
+                                    }
+                                    event.preventDefault(); 
+                                });
+
+                                // Event handling for the second form's increment button
+                                $('.increment-button_2').on('click', function() {
+                                    value_2++; // Increment value
+                                    updateValueInUI(valueElement_2, value_2);
+                                    event.preventDefault(); 
+                                });
+
+                                function updateValueInUI(element, newValue) {
+                                    // Update the value in the UI
+                                    element.text(newValue);
+
+                                    // TODO: Send the updated value to the server via AJAX if needed
+                                    // Example: $.post('/update_value', { value: newValue }, function(response) { });
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="church_devotion_thank_you" name="Thank you">
+        <t t-call="website.layout">
+            <form>
+                <div style="text-align: center;padding: 125px;">
+                    <h1>Thank you</h1>
+                </div>
+            </form>
+        </t>
+    </template>
+
+    <template id="church_devotion_transaction_error" name="Transaction_Error">
+        <t t-call="website.layout">
+            <form>
+                <div style="text-align: center;padding: 125px;">
+                    <h1>Transaction Error!</h1>
+                </div>
+            </form>
+        </t>
+    </template>
+
+</odoo>
