@@ -1,0 +1,383 @@
+<odoo>
+    <data>
+        <!-- This will direct to controller to trigger /shop/pay_with_charity_point route         -->
+        <template id="pay_with_charity_point_confirm">
+            <form action="/shop/pay_with_charity_point" class="mb-2" method="post" name="confirm to pay charity point">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <button type="submit" role="button" class="btn btn-secondary a-submit">Confirm</button>
+            </form> 
+            <!-- <t t-if="request.params.get('charity_point_error')">
+                <div class="alert alert-danger text-left mt16" role="alert" t-esc="request.params.get('charity_point_error')"/>
+            </t> -->
+        </template>
+        
+        <!-- below values are from response in controller, response is from cart func render to 
+        "website_sale.cart", inside the template:  
+        "website_ecomm_charity_pay.website_sale_cart_wallet" is called inside "website_sale.total", 
+        and "website_sale.total" is called by "short_cart_summary" is called, and "short_cart_summary"
+        is called inside the "website_sale.cart", so the values can pass many generations -->
+        <template id="website_sale_cart_wallet" name="Wallet Balance"> 
+            <!-- wallet_balance below is from controller response.qcontext['wallet_balance'] -->
+            <!-- it contains: 'Wallet Balance: ${:.2f}'.format(wallet_balance) and display below t-esc-->
+            <div id="new_total" class="oe_website_new_total_price">
+                <t t-esc="new_total"/>
+            </div>
+            
+            <div id="total_points_needed" class="oe_website_total_points_needed">
+                <t t-esc="total_points_needed"/>
+            </div>
+            
+            <div id="wallet_balance" class="oe_website_sale_wallet_balance">
+                <t t-esc="wallet_balance"/>
+            </div>
+            <div id="error" class="oe_website_sale_wallet_balance_issue">
+                <t t-esc="charity_point_error"/>
+            </div>
+            <!-- when above template id is called, it will go to /shop/cart/wallet to execute controller to get wallet_balance -->
+            <script type="text/javascript">
+                $(function() {
+                    $.ajax({
+                        url: '/shop/cart/wallet',
+                        type: 'POST',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: JSON.stringify({}),
+                        success: function(data) {
+                        console.log('Data received:', data);
+                        if (data.total_points_needed) {
+                            $('#total_points_needed').text('TotalPoints Needed: $' + data.total_points_needed);
+                        }
+                        if (data.wallet_balance) {
+                            $('#wallet_balance').text('Wallet Balance: $' + data.wallet_balance);
+                        }
+                        if (!data.charity_point_error) {
+                            $.ajax({
+                            url: '/shop/cart/recompute',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: JSON.stringify({}),
+                            contentType: 'application/json',
+                            success: function(response) {
+                                if (response.point_pay_total) {
+                                    $('#new_total').text('New Total: $' + response.point_pay_total);
+                                }    
+                            }
+                            });
+                        } else {
+                            $('#charity_point_error').text('No enough points');
+                        }
+                        }
+                    });
+                });
+            </script>
+            
+            <t t-set='force_charity_point' t-value="charity_point_error"/>
+                <t t-if="not force_charity_point">
+                    <t t-call="website_ecomm_charity_pay.pay_with_charity_point_confirm"/> 
+                </t>            
+        </template>
+
+        <!-- Make judgment if allow to charity point pay or not? -->
+        <!-- When the "用慈善點數付款" is clicked, "shop/cart/wallet" is called, then "/shop/cart" to display-->
+        <!-- if the confirm button is clicked, then '/shop/pay_with_charity_point' to recompute -->
+        <template id="add_charity_point" inherit_id="website_sale.total" name="Pay Charity Point">
+            <xpath expr="//div[@id='cart_total']//table/tr[last()]" position="after">
+                <tr t-if="True" class="oe_website_sale_charity_point">
+                    <td colspan="3" class="text-center text-xl-right border-0">
+                        <span class=''>                            
+                            <a href="#" class="js_show_charity_point">Pay with Charity Point</a>
+                            <div t-attf-class="charity_point_pay_line_click #{not force_charity_point and 'd-none'}">
+                                <t t-call="website_ecomm_charity_pay.website_sale_cart_wallet"/> 
+                            </div>
+                        </span>
+                    </td>
+                </tr> 
+            </xpath>
+        </template> 
+        
+        <!-- This is adding new message and points needed in the shop menu -->
+        <template id="website_sale_product_discount_price" inherit_id="website_sale.products_item">
+            <xpath expr="//div[@class='card-body p-0 o_wsale_product_information']//div[@class='p-2 o_wsale_product_information_text']//
+                    div[@class='product_price mb-1']" position="replace">                
+                <div class="product_price mb-2" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                        <span class="h5" t-if="combination_info['price']" t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        <div class="new_content_item">
+                            <span class="oe_currency_value oe_list_price">
+                                <span t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/> + charity Pts:
+                                <span t-esc="combination_info['points_needed']"/>
+                            </span>
+                        </div>
+                        <!-- <span class="h5" t-if="combination_info['points_needed']" t-esc="combination_info['points_needed']"/>  -->
+                        <!-- <del t-attf-class="text-danger ml-1 h6 {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="white-space: nowrap;" t-esc="combination_info['points_needed']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" /> -->
+                        <!-- <span itemprop="discount_price" style="display:none;" t-esc="combination_info['points_needed']" />
+                        <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name" />    -->
+                </div> 
+            </xpath>
+        </template> 
+        
+        <!-- This is adding new message and points needed in the single item -->
+        <template id="website_sale_product_item_price_display" inherit_id="website_sale.product_price">
+            <xpath expr="//div[@class='product_price d-inline-block mt-2 mb-3']" position="replace">                
+                <div class="product_price mb-2" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                        <span class="h3" t-if="combination_info['price']" t-esc="combination_info['list_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                         <div class="new_content_price">
+                            <span class="oe_currency_value oe_list_price">
+                            <span t-esc="combination_info['price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/> + charity Pts:
+                            <span t-esc="combination_info['points_needed']"/>
+                            </span>
+                <!-- Your new content here -->
+                        </div>
+                    <!-- <a href="#" class="show_point">Or:</a> -->
+                        
+
+                <!-- <div itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer" class="points d-inline-block mt-2 mb-3">
+                    <h5 class="css_editable_mode_hidden">
+                        <a href="#" class="show_point">Charity Points Needed:</a>
+                        <span class="h5" t-if="combination_info['points_needed']" t-esc="combination_info['points_needed']"/>
+                    </h5> -->
+                </div> 
+
+            </xpath>
+        </template> 
+        
+        <!-- The above will get all the template of checkout, if we only block "form", footer will be gone -->
+        <!-- The function of checkout_form is defined in js script in payment module -->
+        <!-- In js, the form[o_payment_checkout] is used as selector, without it the two buttons will be gone -->
+        <!-- form[o_payment_checkout] is used to hold the value of website_sale.payment_footer and submit_button_label -->
+        <!-- <template id="custom_payment_checkout" inherit_id="payment.checkout">
+            <xpath expr="//form[@name='o_payment_checkout']" position="replace">
+                <div>
+                    <h3 class="mb24">信用卡支付</h3>
+                </div>
+            </xpath>
+        </template> -->
+
+        <!-- <template id="custom_payment_template" inherit_id="website_sale.payment" customize_show="True" name="Custom Payment Template">
+            <xpath expr="//div[@t-if='acquirers or tokens']" position="replace">
+                <h3 class="mb24">Pay with </h3>
+                <t t-call="website_ecomm_charity_pay.custom_payment_checkout"/>
+                <t t-call="website_ecomm_charity_pay.custom_payment_footer">
+                    <t t-set="submit_button_label">Pay Now</t>
+                </t>
+            </xpath>        
+            <xpath expr="//div[@t-else='']" position="replace"/>            
+            <xpath expr="//div[@t-if='not acquirers']" position="replace"/>            
+        </template> -->
+        <!-- overwrite div t-else condition -->
+        <!-- overwrite div if not acquirers condition -->
+        <!-- There are still div for 0 amount condition, no need to overwrite here! -->
+        <!-- check parent template, you can see that It will go to /payment/validate/ to check validation -->
+
+
+        <!-- This will post the form to bank and then use javascript to listen to the tx message -->
+        <!-- <template id="custom_payment_footer" inherit_id="website_sale.payment_footer" customize_show="True" name="Custom Payment Template">
+            <xpath expr="//button[@name='o_payment_submit_button']" position="replace">
+                <button name="o_payment_submit_button"
+                        type="submit"
+                        class="btn btn-primary"
+                        data-icon-class="fa-chevron-right">
+                    <t t-esc="submit_button_label"/> <i class="fa fa-chevron-right"/>
+                </button>
+                <t t-call="website_ecomm_charity_pay.custom_payment_form"/>
+            </xpath>
+        </template>
+
+        <template id="custom_payment_form">
+            <form id="payment_form" action="https://acqtest.esunbank.com.tw/ACQTrans/esuncard/txnf014s" method="POST" target="_blank">
+                <table>
+                    <tr>
+                        <td>data</td>
+                        <td>
+                            <textarea name="data">
+                                <t t-esc="form_data"/>
+                            </textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>mac</td>
+                        <td>
+                            <input name="mac" t-att-value="mac"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>ksn</td>
+                        <td>
+                            <input name="ksn" value="1"/> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>action</td>
+                        <td>https://acqtest.esunbank.com.tw/ACQTrans/esuncard/txnf014s
+                        </td>
+                    </tr>    
+                </table>
+            </form>
+        </template> -->
+
+<!--         <template id="payment_confirmation_status">
+            <div class="oe_website_sale_tx_status mt-3" t-att-data-order-id="order.id" t-att-data-order-tracking-info="json.dumps(order_tracking_info)">
+                <t t-set="payment_tx_id" t-value="order.get_portal_last_transaction()"/>
+                <div t-attf-class="card #{
+                    (payment_tx_id.state == 'pending' and 'bg-info') or
+                    (payment_tx_id.state == 'done' and order.amount_total == payment_tx_id.amount and 'alert-success') or
+                    (payment_tx_id.state == 'done' and order.amount_total != payment_tx_id.amount and 'bg-warning') or
+                    (payment_tx_id.state == 'authorized' and 'alert-success') or
+                    'bg-danger'}">
+                    <div class="card-header">
+                        <a role="button" groups="base.group_system" class="btn btn-sm btn-link text-white float-right" target="_blank" aria-label="Edit" title="Edit"
+                                t-att-href="'/web#model=%s&amp;id=%s&amp;action=%s&amp;view_type=form' % ('payment.acquirer', payment_tx_id.acquirer_id.id, 'payment.action_payment_acquirer')">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                        <t t-if="payment_tx_id.state == 'pending'">
+                            <t t-out="payment_tx_id.acquirer_id.sudo().pending_msg"/>
+                        </t>
+                        <t t-if="payment_tx_id.state == 'done'">
+                            <span t-if='payment_tx_id.acquirer_id.sudo().done_msg' t-out="payment_tx_id.acquirer_id.sudo().done_msg"/>
+                        </t>
+                        <t t-if="payment_tx_id.state == 'done' and order.amount_total != payment_tx_id.amount">
+                            <span>Unfortunately your order can not be confirmed as the amount of your payment does not match the amount of your cart.
+                            Please contact the responsible of the shop for more information.</span>
+                        </t>
+                        <t t-if="payment_tx_id.state == 'cancel'">
+                            <t t-out="payment_tx_id.acquirer_id.sudo().cancel_msg"/>
+                        </t>
+                        <t t-if="payment_tx_id.state == 'authorized'">
+                            <t t-if="payment_tx_id.acquirer_id.sudo().auth_msg" t-out="payment_tx_id.acquirer_id.sudo().auth_msg"/>
+                            <span t-else="">Your payment has been authorized.</span>
+                        </t>
+                        <t t-if="payment_tx_id.state == 'error'">
+                            <span t-esc="payment_tx_id.state_message"/>
+                        </t>
+                    </div>
+                    <t t-if="payment_tx_id.provider == 'transfer'">
+                        <div t-if="order.reference" class="card-body">
+                            <b>Communication: </b><span t-esc='order.reference'/>
+                        </div>
+                        <div t-if="payment_tx_id.acquirer_id.sudo().qr_code">
+                            <t t-set="qr_code" t-value="payment_tx_id.company_id.partner_id.bank_ids[:1].build_qr_code_base64(order.amount_total,payment_tx_id.reference, None, payment_tx_id.currency_id, payment_tx_id.partner_id)"/>
+                            <div class="card-body" t-if="qr_code">
+                                <h3>Or scan me with your banking app.</h3>
+                                <img class="border border-dark rounded" t-att-src="qr_code"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </template> -->
+
+        <template id="shop_payment_transaction_error" name="Payment_Transaction_Error">
+            <t t-call="website.layout">
+                <form>
+                    <div style="text-align: center;padding: 125px;">
+                        <h1>Transaction Error!</h1>
+                    </div>
+                </form>
+            </t>
+        </template>
+
+        <!-- <template id="website_sale.cart_lines" name="Shopping Cart">            
+            <div t-if="not website_sale_order or not website_sale_order.website_order_line" class="js_cart_lines well well-lg">
+                Your cart is empty!
+            </div>
+
+            <table class="mb16 table table-striped table-sm js_cart_lines" id="cart_products" t-if="website_sale_order and website_sale_order.website_order_line">
+                <thead>
+                    <tr>
+                        <th class="td-img">Product</th>
+                        <th></th>
+                        <th class="text-center td-qty">Quantity</th>
+                        <th class="text-center td-price">Price</th>
+                        <th class="text-center td-action"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="website_sale_order.website_order_line" t-as="line">
+                        <tr t-att-class="'optional_product info' if line.linked_line_id else None">
+                            <td colspan="2" t-if="not line.product_id.product_tmpl_id" class='td-img'></td>
+                            <td align="center" t-if="line.product_id.product_tmpl_id" class='td-img'>
+                                <span t-field="line.product_id.image_128" t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'rounded o_image_64_max'}" />
+                            </td>
+                            <td t-if="line.product_id.product_tmpl_id" class='td-product_name'>
+                                <div>
+                                    <t t-call="website_sale.cart_line_product_link">
+                                        <strong t-field="line.name_short" />
+                                    </t>
+                                </div>
+                                <t t-call="website_sale.cart_line_description_following_lines">
+                                    <t t-set="div_class" t-value="'d-none d-md-block'"/>
+                                </t>
+                            </td>
+                            <td class="text-center td-qty">
+                                <div class="css_quantity input-group mx-auto">
+                                    <div class="input-group-prepend">
+                                        <a t-attf-href="#" class="btn btn-link js_add_cart_json d-none d-md-inline-block" aria-label="Remove one" title="Remove one">
+                                            <i class="fa fa-minus"></i>
+                                        </a>
+                                    </div>
+                                    <input type="text" class="js_quantity form-control quantity" t-att-data-line-id="line.id" t-att-data-product-id="line.product_id.id" t-att-value="int(line.product_uom_qty) == line.product_uom_qty and int(line.product_uom_qty) or line.product_uom_qty" />
+                                    <div class="input-group-append">
+                                        <a t-attf-href="#" class="btn btn-link float_left js_add_cart_json d-none d-md-inline-block" aria-label="Add one" title="Add one">
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center td-price" name="price">
+                                <t t-set="combination" t-value="line.product_id.product_template_attribute_value_ids + line.product_no_variant_attribute_value_ids"/>
+                                <t t-set="combination_info" t-value="line.product_id.product_tmpl_id._get_combination_info(combination)"/>
+
+                                <t t-set="list_price_converted" t-value="website.currency_id._convert(combination_info['list_price'], website_sale_order.currency_id, website_sale_order.company_id, date)"/>
+                                <t groups="account.group_show_line_subtotals_tax_excluded" t-if="(website_sale_order.pricelist_id.discount_policy == 'without_discount' and website_sale_order.currency_id.compare_amounts(list_price_converted, line.price_reduce_taxexcl) == 1) or website_sale_order.currency_id.compare_amounts(line.price_unit, line.price_reduce) == 1" name="order_line_discount">
+                                    <del t-attf-class="#{'text-danger mr8'}" style="white-space: nowrap;" t-esc="list_price_converted" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}" />
+                                </t>
+                                <span t-field="line.price_reduce_taxexcl" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}" groups="account.group_show_line_subtotals_tax_excluded" />
+                                <t groups="account.group_show_line_subtotals_tax_included" t-if="(website_sale_order.pricelist_id.discount_policy == 'without_discount' and website_sale_order.currency_id.compare_amounts(list_price_converted, line.price_reduce_taxinc) == 1) or website_sale_order.currency_id.compare_amounts(line.price_unit, line.price_reduce) == 1" name="order_line_discount">
+                                    <del t-attf-class="#{'text-danger mr8'}" style="white-space: nowrap;" t-esc="list_price_converted" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}" />
+                                </t>
+                                <span t-field="line.price_reduce_taxinc" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}" groups="account.group_show_line_subtotals_tax_included" />
+                            </td>
+                            <td class="td-action">
+                                <a href='#' aria-label="Remove from cart" title="Remove from cart" class='js_delete_product no-decoration'> <small><i class='fa fa-trash-o'></i></small></a>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </template>
+ -->
+        <!-- Update the `website_sale.payment` controller to use your custom controller -->
+        <!-- <record id="website_sale_payment" model="ir.ui.view">
+            <field name="name">website_sale.payment</field>
+            <field name="model">website</field>
+            <field name="inherit_id" ref="website_sale.total"/>
+            <field name="arch" type="xml">
+                <template inherit_id="website_sale.total" name="Custom Shop Payment" active="True" priority="100">
+                    <xpath expr="//div[@id='cart_total']" position="after">
+                        <div class="custom-payment-container">
+                            <div class="o_payment_option custom">
+                                <label class="custom-control custom-radio">
+                                    <input type="radio" name="charity_payment_method_id" id="charity_payment_radio" class="custom-control-input" value="charity_payment_method"/>
+                                    <div class="custom-control-label">
+                                        <span>Charity Point Payment</span>
+                                        <span class="custom-payment-desc">You will get a discount by using charity points.</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </xpath>
+                </template>
+            </field>
+        </record> -->
+
+        <!-- Use your custom controller -->
+        <!-- <record id="website_sale_payment_controller" model="ir.http">
+            <field name="name">website_sale.payment</field>
+            <field name="type">controller</field>
+            <field name="route">/shop/payment</field>
+            <field name="auth">public</field>
+            <field name="website_id" eval="False"/>
+            <field name="model_id" ref="website.model_website"/>
+            <field name="controller_id" ref="custom_website_sale_controller"/>
+        </record> -->
+    </data>
+</odoo>
